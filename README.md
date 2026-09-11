@@ -1,73 +1,75 @@
 # OpenWrt Wi-Fi Monitor
 
-**Кто подключён к Wi-Fi прямо сейчас, как давно и с каким сигналом — на одной странице LuCI.**
+**English** | [Русский](README.ru.md)
 
-Wi-Fi Monitor добавляет пункт **Сервисы → Wi-Fi монитор**. Он собирает текущие подключения с беспроводных интерфейсов, дополняет их именами и IP из DHCP и показывает две таблицы: все подключённые устройства и недавно подключившиеся.
+**See who is connected to Wi-Fi right now, for how long, and with what signal strength — on one LuCI page.**
 
-[Установка](#установка) · [Возможности](#возможности) · [Сравнение с DHCP-арендами](#почему-не-достаточно-списка-dhcp-аренд) · [Ограничения](#что-важно-знать)
+Wi-Fi Monitor adds **Services → Wi-Fi Monitor** to LuCI. It reads the stations currently reported by the wireless interfaces, enriches them with names and IPv4 addresses from DHCP leases, and presents a searchable overview plus a list of the most recently connected stations. The page follows the LuCI language and supports both English and Russian.
 
-![Обзор Wi-Fi монитора: счётчики, поиск, диапазоны и таблица устройств](docs/images/overview.png)
+[Installation](#installation) · [Features](#features) · [Why DHCP leases are not enough](#why-dhcp-leases-are-not-enough) · [Limitations](#limitations)
 
-*На иллюстрациях имена устройств, SSID, IP и MAC заменены вымышленными данными. Показан фрагмент общего списка; счётчик относится ко всем подключениям.*
+![Wi-Fi Monitor overview with counters, search, band filters and connected stations](docs/images/overview.png)
 
-## Почему не достаточно списка DHCP-аренд
+*The screenshots show the Russian interface. Device names, SSIDs, IP addresses and MAC addresses were replaced with fictional data. The overview image contains only part of the table; its counter covers all connections.*
 
-DHCP-аренда отвечает на вопрос **«какой адрес выдан устройству и сколько ещё действует аренда?»**. Она не подтверждает, что устройство прямо сейчас подключено к Wi-Fi. Телефон мог уйти из сети, а запись об аренде ещё остаётся. Кроме того, в арендах могут быть и проводные клиенты.
+## Why DHCP leases are not enough
 
-Wi-Fi Monitor отвечает на другой вопрос: **«какие устройства видит Wi-Fi-драйвер сейчас и как выглядит их подключение?»**. Основа списка — `iw ... station dump`; DHCP используется только для сопоставления MAC с IPv4-адресом и именем.
+A DHCP lease answers **“which address was assigned to this device, and for how long is the lease valid?”** It does not prove that the device is currently associated with Wi-Fi. A phone may have left the network while its lease remains active, and the lease table can also contain wired clients.
 
-| Что нужно узнать | Список DHCP-аренд | Wi-Fi Monitor |
+Wi-Fi Monitor answers **“which stations does the Wi-Fi driver see now, and what does each connection look like?”** The station list comes from `iw ... station dump`; DHCP is used only to map a MAC address to an IPv4 address and hostname.
+
+| Information | DHCP leases | Wi-Fi Monitor |
 | --- | --- | --- |
-| Выданный IP и имя | Да | Да, если есть локальная DHCP-аренда |
-| Остаток срока аренды | Да | Не отображается |
-| Текущее Wi-Fi-подключение | Наличие аренды этого не гарантирует | Список станций от Wi-Fi-драйвера |
-| Как давно клиент подключился к Wi-Fi | Срок аренды не равен времени подключения | Длительность текущего подключения |
-| Кто подключился последним | По арендам нельзя надёжно определить | Отдельная таблица по времени подключения |
-| Диапазон, SSID и сигнал | В самой таблице аренд этих данных нет | В строке устройства |
-| Скорости соединения RX / TX | В самой таблице аренд этих данных нет | Если их предоставляет драйвер |
-| Клиент с вручную заданным IP | Может отсутствовать | Видно подключение и MAC; IP может быть неизвестен |
+| Assigned IP address and hostname | Yes | Yes, when a local DHCP lease exists |
+| Remaining lease time | Yes | Not displayed |
+| Current Wi-Fi association | A lease does not guarantee it | Reported by the Wi-Fi driver |
+| Duration of the current association | Lease time is different | Displayed as time online |
+| Most recently connected stations | Cannot be determined reliably | Dedicated list ordered by connection time |
+| Band, SSID and signal | Not in the lease table | Displayed for every station |
+| RX/TX link rates | Not in the lease table | Displayed when reported by the driver |
+| Client with a manually configured IP | May be absent | Association and MAC are visible; IP may be unknown |
 
-### А чем удобнее штатного статуса Wi-Fi?
+### How is it more convenient than the standard Wi-Fi status?
 
-В LuCI уже есть **Associated Stations / Подключённые станции**: там доступны подключённые клиенты, сигнал и скорости RX/TX. Wi-Fi Monitor дополняет этот обзор удобствами для повседневного наблюдения:
+LuCI already provides an **Associated Stations** table with connected clients, signal information and RX/TX link rates. Wi-Fi Monitor adds tools intended for quick, repeated checks:
 
-- **Время в сети и недавние подключения.** Сразу видно, какое устройство только что подключилось или переподключилось.
-- **Поиск и сортировка.** Можно найти клиента по имени, IP, MAC или SSID, затем отсортировать список по сигналу или времени в сети.
-- **Фильтр диапазона.** Удобно отдельно посмотреть клиентов 2,4 или 5 ГГц.
-- **Сводка над таблицей.** Общее число подключений, количество по диапазонам и число клиентов со слабым сигналом.
-- **Управляемое обновление.** Один снимок по кнопке либо обновление каждые 10, 30 или 60 секунд.
+- **Connection duration and recent connections** show which station has just joined or reconnected.
+- **Search and sorting** find a client by hostname, IP, MAC or SSID and order the table by signal or time online.
+- **Band filtering** separates 2.4, 5 and 6 GHz stations.
+- **Summary cards** show the total number of stations, counts by band and the number with weak signal.
+- **Controlled refresh** provides a single snapshot on demand or optional refresh every 10, 30 or 60 seconds.
 
-Например, после подключения нового телефона достаточно открыть «Недавно подключившиеся». Если камера работает нестабильно, её можно найти по имени и посмотреть сигнал и длительность текущего подключения. Сам монитор не устанавливает причину разрывов, но помогает заметить признаки, которые стоит проверить.
+For example, after connecting a new phone, open “Recently connected” instead of scanning the full status page. When a camera behaves inconsistently, search by its hostname and check its signal and current connection duration. The monitor does not diagnose the cause of a disconnection, but makes the relevant symptoms easier to spot.
 
-## Возможности
+## Features
 
-- Отдельная страница LuCI на русском языке, доступная после обычного входа.
-- Имя устройства, IPv4, MAC, диапазон, SSID, сигнал в dBm, время в сети, скорости RX/TX.
-- Сортировка нажатием на заголовок столбца; повторное нажатие меняет направление.
-- Поиск по имени, IP, MAC, SSID и имени интерфейса.
-- Фильтры применяются к обеим таблицам; верхние счётчики показывают весь снимок.
-- Последние 10, 20 или все текущие подключения, от новых к старым.
-- Ручное обновление и отключаемое автообновление. По умолчанию оно выключено; скрытая вкладка не опрашивает роутер.
-- При ошибке остаётся предыдущий снимок с сообщением об ошибке и временем последнего успешного обновления.
-- Получение данных по запросу: отдельный постоянно работающий процесс сбора и запись истории на флеш-память не нужны.
+- English and Russian interface selected automatically from the LuCI language.
+- Hostname, IPv4, MAC, band, SSID, signal in dBm, connection duration and RX/TX link rates.
+- Sorting by column; click a heading again to reverse the direction.
+- Search by hostname, IP, MAC, SSID or interface name.
+- Band filter shared by both tables; summary cards continue to describe the complete snapshot.
+- 10, 20 or all recent current connections, newest first.
+- Manual refresh and optional automatic refresh. Automatic refresh is off by default and pauses while the browser tab is hidden.
+- Previous data remains visible if an update fails, together with an error message.
+- Data is collected only when requested. There is no background daemon and no connection history written to flash storage.
 
-## Недавно подключившиеся
+## Recently connected
 
-![Недавно подключившиеся: время подключения, имя, IP, MAC, диапазон и время в сети](docs/images/recent-connections.png)
+![Recently connected stations with connection time, name, IP, MAC, band and time online](docs/images/recent-connections.png)
 
-Это **не журнал всех событий**. Здесь находятся только станции, которые остаются подключёнными на момент обновления. После отключения устройство исчезнет из обеих таблиц. Время подключения рассчитывается по часам роутера и длительности соединения, а показывается в часовом поясе браузера.
+This is **not a persistent event log**. It contains only stations that are still connected when the page is refreshed. A station disappears from both tables after disconnecting. The connection timestamp is calculated from the router clock and association duration, then displayed in the browser time zone.
 
-## Совместимость
+## Compatibility
 
-Работа проверена на **OpenWrt 24.10.1 с LuCI и драйвером mac80211 на MediaTek Filogic**. На других версиях и драйверах требуется проверка; некоторые поля могут отсутствовать.
+The project was tested on **OpenWrt 24.10.1 with LuCI and the mac80211 driver on MediaTek Filogic**. Other OpenWrt versions and wireless drivers may require testing, and some fields may be unavailable.
 
-Нужны LuCI, `rpcd`, `ubus`, команда `iw` и библиотека `/usr/share/libubox/jshn.sh` из пакета `jshn`. В стандартной установке LuCI большая часть зависимостей уже присутствует. Установщик проверяет необходимые команды и файлы до копирования.
+Required components are LuCI, `rpcd`, `ubus`, the `iw` command and `/usr/share/libubox/jshn.sh` from the `jshn` package. Most are already present in a standard LuCI installation. The installer checks the required commands and files before copying anything.
 
-Рекомендуемый сценарий — роутер или точка доступа, где `iw` показывает подключённых Wi-Fi-клиентов. Имена и IPv4 читаются из `/tmp/dhcp.leases`. Если DHCP работает на другом устройстве, подключения будут видны, но имена и IP могут отсутствовать.
+The intended setup is a router or access point where `iw` reports associated Wi-Fi stations. Hostnames and IPv4 addresses are read from `/tmp/dhcp.leases`. If DHCP runs on another device, associations are still shown, but names and addresses may be missing.
 
-## Установка
+## Installation
 
-Войдите на роутер по SSH с правами root. Скачайте и распакуйте исходники:
+Connect to the router over SSH as root, then download and install the source:
 
 ```sh
 mkdir -p /tmp/wifi-monitor-install
@@ -78,69 +80,73 @@ cd OpenWrt-WiFi-Monitor-main
 sh install.sh
 ```
 
-Откройте **Сервисы → Wi-Fi монитор**. Прямой путь относительно адреса вашего роутера: `/cgi-bin/luci/admin/services/wifi-monitor`.
+Open **Services → Wi-Fi Monitor**. The direct path relative to the router address is `/cgi-bin/luci/admin/services/wifi-monitor`.
 
-Если пункт меню не появился, выйдите из LuCI и войдите снова. Если браузер показывает старую версию страницы, выполните принудительное обновление страницы.
+If the menu item does not appear, sign out of LuCI and sign in again. If the browser shows an older page, force-refresh it.
 
-Установщик копирует четыре файла и перезапускает `rpcd`, чтобы зарегистрировать метод получения данных. Текущая сессия LuCI может потребовать повторного входа. **Перезагрузка роутера и перезапуск Wi-Fi не требуются.** Настройки беспроводной сети и DHCP не меняются. Существующий консольный скрипт `wifi_monitor`, если он есть, остаётся на месте; веб-интерфейс от него не зависит.
+The installer copies four files and restarts `rpcd` to register the data method. The current LuCI session may require a new sign-in. **The router and Wi-Fi are not rebooted or restarted.** Wireless and DHCP settings are not changed. An existing `/usr/bin/wifi_monitor` command remains untouched; the web interface does not depend on it.
 
-| Файл | Назначение |
+| File | Purpose |
 | --- | --- |
-| `/usr/libexec/rpcd/wifi-monitor` | Сбор данных и RPC-метод `status` |
-| `/www/luci-static/resources/view/wifi-monitor.js` | Страница LuCI |
-| `/usr/share/luci/menu.d/luci-app-wifi-monitor.json` | Пункт меню |
-| `/usr/share/rpcd/acl.d/luci-app-wifi-monitor.json` | Доступ к чтению данных через LuCI |
+| `/usr/libexec/rpcd/wifi-monitor` | Data collection and the `status` RPC method |
+| `/www/luci-static/resources/view/wifi-monitor.js` | LuCI page |
+| `/usr/share/luci/menu.d/luci-app-wifi-monitor.json` | Menu entry |
+| `/usr/share/rpcd/acl.d/luci-app-wifi-monitor.json` | Read access to the data through LuCI |
 
-### Обновление и удаление
+### Updating and removing
 
-Для обновления скачайте свежую версию и снова выполните `sh install.sh`. Заменяемые файлы сохраняются в `/root/wifi-monitor-backups/` в отдельной папке для каждого запуска. При первой установке резервная папка может быть пустой.
+To update, download the latest source and run `sh install.sh` again. Replaced files are copied to a timestamped directory under `/root/wifi-monitor-backups/`. The backup directory can be empty on the first installation.
 
-Для удаления из каталога с исходниками:
+To remove the component from the source directory:
 
 ```sh
 sh uninstall.sh
 ```
 
-Удаляются только четыре файла компонента и обновляется регистрация RPC. Резервные копии и исходный консольный скрипт сохраняются. После обновления прошивки ручную установку может потребоваться повторить: это файловая установка, а не пакет, зарегистрированный в `opkg`.
+Only the four component files are removed and RPC registration is refreshed. Backups and the original command-line script are preserved. A firmware upgrade may require reinstalling the component because this is a file-based installation rather than an `opkg` package.
 
-## Что важно знать
+## Limitations
 
-- **«В сети» — длительность текущего Wi-Fi-подключения**, а не срок DHCP-аренды и не время работы устройства. После переподключения отсчёт начинается заново.
-- **RX/TX — скорости радиосоединения**, а не тест скорости интернета и не фактическая загрузка канала. RX — приём роутером от клиента, TX — передача от роутера клиенту.
-- **Сигнал** берётся из `signal avg`, а при отсутствии среднего — из `signal`. Зелёный: от −60 dBm; жёлтый: от −70 до менее −60 dBm; красный: ниже −70 dBm. Это ориентиры для просмотра, а не универсальная оценка качества связи.
-- **Имена и IP — подсказки из локальных DHCP-аренд.** Нет IPv6, разрешения имён через DNS и гарантированного определения статических адресов. Смена MAC клиентом может выглядеть как другое устройство.
-- **Счётчик отражает записи подключений.** Один клиент с несколькими интерфейсами или подключениями может учитываться несколько раз.
-- **Монитор видит интерфейсы этого роутера**, а не автоматически все точки доступа сети. Поддержка диапазона 6 ГГц предусмотрена в таблицах и фильтре, но на проверенной конфигурации не тестировалась; отдельной карточки 6 ГГц нет.
-- **Данные обновляются последовательно по интерфейсам.** Во время подключения или отключения возможны кратковременные расхождения; следующий снимок покажет актуальное состояние.
+- **Online means the duration of the current Wi-Fi association**, not DHCP lease time or device uptime. It starts again after reconnection.
+- **RX/TX values are radio link rates**, not an internet speed test or actual traffic. RX is reception by the router from the client; TX is transmission from the router to the client.
+- **Signal uses `signal avg`**, falling back to `signal`. Green is −60 dBm or better, amber is −70 to below −60 dBm, and red is below −70 dBm. These are viewing aids rather than a universal quality rating.
+- **Hostnames and IP addresses are hints from local DHCP leases.** IPv6, DNS name resolution and reliable discovery of static addresses are not implemented. MAC randomization may make the same client appear as another device.
+- **Counters describe association records.** A client represented by more than one interface or association can be counted more than once.
+- **Only interfaces on this router are visible.** Other access points are not discovered automatically. The UI recognizes 6 GHz, but that band has not been tested on the reference setup and has no separate summary card.
+- **Interfaces are read sequentially.** A station joining or leaving during collection can cause a brief mismatch; the next snapshot will correct it.
 
-## Проверка работы
+## Verification
 
-На роутере:
+On the router:
 
 ```sh
 ubus call wifi-monitor status
 ```
 
-В ответе должны быть `timestamp`, массив `devices` и строка `warning`. Пустой массив допустим, если нет Wi-Fi-подключений. Непустая `warning` перечисляет интерфейсы, которые не удалось прочитать.
+The response should contain `timestamp`, a `devices` array and a `warning` string. An empty array is valid when no Wi-Fi stations are connected. A non-empty `warning` lists interfaces that could not be read.
 
-Для проверки исходников на компьютере с Node.js:
+On a computer with Node.js:
 
 ```sh
 node --check files/wifi-monitor.js
 node tests/view.cjs
 ```
 
-Тесты используют только вымышленные данные и облегчённую модель DOM. Они проверяют отображение, поиск, фильтрацию, сортировку, обновление и обработку ошибок; полноценную проверку страницы в браузере они не заменяют.
+The UI tests use fictional data and a lightweight DOM model. They cover English and Russian rendering, search, filtering, sorting, refresh and error handling. They do not replace a full browser test.
 
-Установку, обновление с резервной копией и удаление можно проверить на OpenWrt или Linux командой `sh tests/install.sh`. Проверка использует отдельное временное дерево через `DESTDIR`, не перезапускает службы и сохраняет тестовую папку для осмотра.
+Installation, update backup and removal can be checked on OpenWrt or Linux with `sh tests/install.sh`. It installs into a separate temporary tree through `DESTDIR`, does not restart services and retains the test directory for inspection.
 
-## Как это устроено
+## How it works
 
 ```text
-Страница LuCI → ubus / rpcd → iw: текущие Wi-Fi-станции
-                          → DHCP: имена и IPv4 по MAC
+LuCI page → ubus / rpcd → iw: currently associated Wi-Fi stations
+                       → DHCP: hostname and IPv4 lookup by MAC
 ```
 
-Один запрос собирает набор данных, из которого строятся обе таблицы и счётчики. Фильтры и сортировка выполняются в браузере и не вызывают дополнительных команд на роутере.
+Each request produces one snapshot used for both tables and all counters. Search, filtering and sorting run in the browser and execute no additional commands on the router.
 
-Справка OpenWrt: [получение списка подключённых клиентов](https://openwrt.org/faq/how_to_get_a_list_of_connected_clients), [настройки DHCP и DNS](https://openwrt.org/docs/guide-user/base-system/dhcp). Возможности штатной таблицы станций видны в [исходниках LuCI](https://github.com/openwrt/luci/blob/openwrt-24.10/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/60_wifi.js).
+OpenWrt references: [listing connected clients](https://openwrt.org/faq/how_to_get_a_list_of_connected_clients), [DHCP and DNS configuration](https://openwrt.org/docs/guide-user/base-system/dhcp), and the [standard LuCI station table source](https://github.com/openwrt/luci/blob/openwrt-24.10/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/60_wifi.js).
+
+## License
+
+Released under the [MIT License](LICENSE).

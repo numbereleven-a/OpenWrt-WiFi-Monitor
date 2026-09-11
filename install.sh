@@ -12,9 +12,10 @@ else
     for cmd in iw ubus; do
         command -v "$cmd" >/dev/null || { echo "Missing dependency: $cmd" >&2; exit 1; }
     done
-    for file in /usr/share/libubox/jshn.sh /etc/init.d/rpcd /www/luci-static/resources/view.js; do
+    for file in /usr/share/libubox/jshn.sh /etc/init.d/rpcd /www/luci-static/resources/luci.js; do
         [ -f "$file" ] || { echo "Missing dependency: $file" >&2; exit 1; }
     done
+    [ -d /www/luci-static/resources/view ] || { echo 'Missing LuCI view directory.' >&2; exit 1; }
 fi
 for file in wifi-monitor wifi-monitor.js luci-app-wifi-monitor.json acl-wifi-monitor.json; do
     [ -s "$src/files/$file" ] || { echo "Missing source: $file" >&2; exit 1; }
@@ -41,6 +42,15 @@ put acl-wifi-monitor.json /usr/share/rpcd/acl.d/luci-app-wifi-monitor.json 644
 if [ -z "$root" ]; then
     rm -f /tmp/luci-indexcache
     /etc/init.d/rpcd restart
+    ready=false
+    for attempt in 1 2 3 4 5; do
+        if ubus -S list wifi-monitor 2>/dev/null | grep -qx 'wifi-monitor'; then
+            ready=true
+            break
+        fi
+        sleep 1
+    done
+    [ "$ready" = true ] || { echo 'Wi-Fi Monitor was copied, but rpcd did not register it.' >&2; exit 1; }
 fi
 printf 'Installed Wi-Fi Monitor. Backup: %s\n' "$backup"
 echo 'Open LuCI: Services -> Wi-Fi monitor. Sign in again if necessary.'

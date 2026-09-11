@@ -9,15 +9,15 @@ json_init
 json_add_int timestamp "$(date +%s)"
 json_add_array devices
 errors=''
-ifaces=$(iw dev 2>/dev/null) || { echo '{"error":"Не удалось получить список Wi-Fi интерфейсов"}'; exit 0; }
+ifaces=$(iw dev 2>/dev/null) || { echo '{"error":"Unable to list Wi-Fi interfaces"}'; exit 0; }
 for iface in $(printf '%s\n' "$ifaces" | awk '$1 == "Interface" {print $2}'); do
     info=$(iw dev "$iface" info 2>/dev/null)
     ssid=$(printf '%s\n' "$info" | sed -n 's/^[[:space:]]*ssid //p')
     freq=$(printf '%s\n' "$info" | awk '$1 == "channel" {gsub(/\(/,"",$3); print $3}')
-    band='—'
-    [ "${freq:-0}" -ge 2400 ] && band='2,4 ГГц'
-    [ "${freq:-0}" -ge 4900 ] && band='5 ГГц'
-    [ "${freq:-0}" -ge 5925 ] && band='6 ГГц'
+    band='unknown'
+    [ "${freq:-0}" -ge 2400 ] && band='2.4'
+    [ "${freq:-0}" -ge 4900 ] && band='5'
+    [ "${freq:-0}" -ge 5925 ] && band='6'
     dump=$(iw dev "$iface" station dump 2>/dev/null) || { errors="$errors $iface"; continue; }
     rows=$(printf '%s\n' "$dump" | awk '
     function emit() {if (mac != "") print mac "|" signal "|" duration "|" rx "|" tx}
