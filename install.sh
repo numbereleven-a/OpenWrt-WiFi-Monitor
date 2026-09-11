@@ -4,6 +4,33 @@ set -eu
 # DESTDIR supports installation checks in an isolated filesystem tree.
 root=${DESTDIR:-}
 src=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+download_dir=''
+cleanup() {
+    if [ -n "$download_dir" ] && [ "${download_dir#/tmp/wifi-monitor.}" != "$download_dir" ]; then
+        rm -f "$download_dir/files/wifi-monitor" \
+            "$download_dir/files/wifi-monitor.js" \
+            "$download_dir/files/luci-app-wifi-monitor.json" \
+            "$download_dir/files/acl-wifi-monitor.json"
+        rmdir "$download_dir/files" "$download_dir" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT INT TERM
+
+sources_ready=true
+for file in wifi-monitor wifi-monitor.js luci-app-wifi-monitor.json acl-wifi-monitor.json; do
+    [ -s "$src/files/$file" ] || sources_ready=false
+done
+if [ "$sources_ready" != true ]; then
+    command -v wget >/dev/null || { echo 'Missing dependency: wget' >&2; exit 1; }
+    download_dir=$(mktemp -d /tmp/wifi-monitor.XXXXXX)
+    mkdir -p "$download_dir/files"
+    base='https://raw.githubusercontent.com/numbereleven-a/OpenWrt-WiFi-Monitor/main/files'
+    for file in wifi-monitor wifi-monitor.js luci-app-wifi-monitor.json acl-wifi-monitor.json; do
+        wget -qO "$download_dir/files/$file" "$base/$file" || { echo "Failed to download: $file" >&2; exit 1; }
+    done
+    src=$download_dir
+fi
+
 if [ -n "$root" ]; then
     case "$root" in /*) ;; *) echo 'DESTDIR must be absolute.' >&2; exit 1;; esac
     [ "$root" != / ] || { echo 'Use an empty DESTDIR for live installation.' >&2; exit 1; }

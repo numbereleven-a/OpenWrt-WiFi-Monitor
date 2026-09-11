@@ -10,8 +10,6 @@ Wi-Fi Monitor adds **Services → Wi-Fi Monitor** to LuCI. It reads the stations
 
 ![Wi-Fi Monitor overview with counters, search, band filters and connected stations](docs/images/overview.png)
 
-*Device names, SSIDs, IP addresses and MAC addresses in the screenshots are fictional. The overview image contains only part of the table; its counter covers all connections.*
-
 ## Why DHCP leases are not enough
 
 A DHCP lease answers **“which address was assigned to this device, and for how long is the lease valid?”** It does not prove that the device is currently associated with Wi-Fi. A phone may have left the network while its lease remains active, and the lease table can also contain wired clients.
@@ -69,7 +67,15 @@ The intended setup is a router or access point where `iw` reports associated Wi-
 
 ## Installation
 
-Connect to the router over SSH as root, then download and install the source:
+Connect to the router over SSH as root and run one command:
+
+```sh
+wget -qO- https://raw.githubusercontent.com/numbereleven-a/OpenWrt-WiFi-Monitor/main/install.sh | sh
+```
+
+The same command updates an existing installation. Before replacing files, the installer saves a timestamped backup under `/root/wifi-monitor-backups/`.
+
+For a manual installation, download and unpack the complete source:
 
 ```sh
 mkdir -p /tmp/wifi-monitor-install
