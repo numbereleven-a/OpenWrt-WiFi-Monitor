@@ -1,0 +1,6 @@
+{
+  "luci-app-wifi-monitor": {
+    "description": "Read Wi-Fi monitor status",
+    "read": { "ubus": { "wifi-monitor": [ "status" ] } }
+  }
+}

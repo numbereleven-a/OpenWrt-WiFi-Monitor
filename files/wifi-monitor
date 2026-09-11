@@ -1,0 +1,54 @@
+#!/bin/sh
+. /usr/share/libubox/jshn.sh
+case "$1:$2" in
+list:*) echo '{"status":{}}'; exit 0 ;;
+call:status) ;;
+*) exit 1 ;;
+esac
+json_init
+json_add_int timestamp "$(date +%s)"
+json_add_array devices
+errors=''
+ifaces=$(iw dev 2>/dev/null) || { echo '{"error":"Не удалось получить список Wi-Fi интерфейсов"}'; exit 0; }
+for iface in $(printf '%s\n' "$ifaces" | awk '$1 == "Interface" {print $2}'); do
+    info=$(iw dev "$iface" info 2>/dev/null)
+    ssid=$(printf '%s\n' "$info" | sed -n 's/^[[:space:]]*ssid //p')
+    freq=$(printf '%s\n' "$info" | awk '$1 == "channel" {gsub(/\(/,"",$3); print $3}')
+    band='—'
+    [ "${freq:-0}" -ge 2400 ] && band='2,4 ГГц'
+    [ "${freq:-0}" -ge 4900 ] && band='5 ГГц'
+    [ "${freq:-0}" -ge 5925 ] && band='6 ГГц'
+    dump=$(iw dev "$iface" station dump 2>/dev/null) || { errors="$errors $iface"; continue; }
+    rows=$(printf '%s\n' "$dump" | awk '
+    function emit() {if (mac != "") print mac "|" signal "|" duration "|" rx "|" tx}
+    /^Station / {emit(); mac=$2; signal=""; duration=""; rx=""; tx=""}
+    $1=="signal:" {signal=$2}
+    $1=="signal" && $2=="avg:" {signal=$3}
+    $1=="connected" && $2=="time:" {duration=$3}
+    $1=="rx" && $2=="bitrate:" {rx=$3}
+    $1=="tx" && $2=="bitrate:" {tx=$3}
+    END {emit()}')
+    [ -z "$rows" ] && continue
+    while IFS='|' read -r mac signal duration rx tx; do
+        lease=$(awk -v mac="$mac" 'tolower($2)==tolower(mac) {print $3 "|" $4; exit}' /tmp/dhcp.leases 2>/dev/null)
+        ip=${lease%%|*}; hostname=${lease#*|}
+        [ "$hostname" = '*' ] && hostname=''
+        json_add_object ''
+        json_add_string mac "$mac"
+        json_add_string ip "$ip"
+        json_add_string hostname "$hostname"
+        json_add_string iface "$iface"
+        json_add_string ssid "$ssid"
+        json_add_string band "$band"
+        for field in signal duration rx tx; do
+            case "$field" in signal) value=$signal;; duration) value=$duration;; rx) value=$rx;; tx) value=$tx;; esac
+            if [ -n "$value" ]; then json_add_double "$field" "$value"; else json_add_null "$field"; fi
+        done
+        json_close_object
+    done <<EOF
+$rows
+EOF
+done
+json_close_array
+json_add_string warning "$errors"
+json_dump
