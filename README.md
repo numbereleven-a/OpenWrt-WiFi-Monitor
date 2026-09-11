@@ -10,7 +10,7 @@ Wi-Fi Monitor adds **Services → Wi-Fi Monitor** to LuCI. It reads the stations
 
 ![Wi-Fi Monitor overview with counters, search, band filters and connected stations](docs/images/overview.png)
 
-*The screenshots show the Russian interface. Device names, SSIDs, IP addresses and MAC addresses were replaced with fictional data. The overview image contains only part of the table; its counter covers all connections.*
+*Device names, SSIDs, IP addresses and MAC addresses in the screenshots are fictional. The overview image contains only part of the table; its counter covers all connections.*
 
 ## Why DHCP leases are not enough
 
