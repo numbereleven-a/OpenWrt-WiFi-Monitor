@@ -1,6 +1,8 @@
 * text=auto
 *.sh text eol=lf
 files/wifi-monitor text eol=lf
+tests/mocks/* text eol=lf
+VERSION text eol=lf
 *.js text eol=lf
 *.cjs text eol=lf
 *.json text eol=lf

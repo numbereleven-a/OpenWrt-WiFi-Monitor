@@ -70,19 +70,19 @@ The intended setup is a router or access point where `iw` reports associated Wi-
 Connect to the router over SSH as root and run one command:
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/numbereleven-a/OpenWrt-WiFi-Monitor/main/install.sh | sh
+(wm_installer=$(mktemp /tmp/wifi-monitor-install.XXXXXX) && trap 'rm -f "$wm_installer"' EXIT && wget -O "$wm_installer" https://raw.githubusercontent.com/numbereleven-a/OpenWrt-WiFi-Monitor/main/install.sh && sh "$wm_installer" --download)
 ```
 
-The same command updates an existing installation. Before replacing files, the installer saves a timestamped backup under `/root/wifi-monitor-backups/`.
+The same command updates an existing installation, even when run from an old source directory. Download failures return a nonzero exit status. The installer downloads all four component files from its matching release tag, prepares all replacements and backs up the existing files before applying changes. If replacement or RPC registration fails, it attempts to restore the previous files and reports any restoration failure.
 
 For a manual installation, download and unpack the complete source:
 
 ```sh
 mkdir -p /tmp/wifi-monitor-install
 cd /tmp/wifi-monitor-install
-wget -O source.tar.gz https://github.com/numbereleven-a/OpenWrt-WiFi-Monitor/archive/refs/heads/main.tar.gz
+wget -O source.tar.gz https://github.com/numbereleven-a/OpenWrt-WiFi-Monitor/archive/refs/tags/v1.1.0.tar.gz
 tar -xzf source.tar.gz
-cd OpenWrt-WiFi-Monitor-main
+cd OpenWrt-WiFi-Monitor-1.1.0
 sh install.sh
 ```
 
@@ -101,7 +101,7 @@ The installer copies four files and restarts `rpcd` to register the data method.
 
 ### Updating and removing
 
-To update, download the latest source and run `sh install.sh` again. Replaced files are copied to a timestamped directory under `/root/wifi-monitor-backups/`. The backup directory can be empty on the first installation.
+To update, use the one-line command above or download the latest release and run `sh install.sh`. Existing files are saved under `/root/wifi-monitor-backups/<timestamp>-<pid>/original/` with their original paths and permissions. No installed files are replaced until all backups and staged files are ready. During a failed first installation, newly installed component files are removed. A filesystem failure that also prevents restoration requires manual recovery from the printed backup path.
 
 To remove the component from the source directory:
 
@@ -140,7 +140,9 @@ node tests/view.cjs
 
 The UI tests use fictional data and a lightweight DOM model. They cover English and Russian rendering, search, filtering, sorting, refresh and error handling. They do not replace a full browser test.
 
-Installation, update backup and removal can be checked on OpenWrt or Linux with `sh tests/install.sh`. It installs into a separate temporary tree through `DESTDIR`, does not restart services and retains the test directory for inspection.
+Installation, update backup, removal and failure recovery can be checked on OpenWrt or Linux with `sh tests/install.sh`. It uses temporary trees through `DESTDIR`, synthetic failures and mocked downloads; it does not restart services and retains the test directory for inspection. Tests cover stale source directories, staging and replacement failures, failed initial installations, and both installer and payload download failures.
+
+Version: **1.1.0**. See the [release notes](docs/releases/v1.1.0.md).
 
 ## How it works
 

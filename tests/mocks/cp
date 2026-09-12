@@ -1,0 +1,9 @@
+#!/bin/sh
+if [ "${WM_TEST_FAULT:-}" = stage-copy ]; then
+    case "$2" in */view/wifi-monitor.js.wifi-monitor-*)
+        echo 'Simulated staging error: No space left on device' >&2
+        exit 1
+        ;;
+    esac
+fi
+exec /bin/cp "$@"

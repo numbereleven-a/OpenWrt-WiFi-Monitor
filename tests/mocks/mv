@@ -1,0 +1,11 @@
+#!/bin/sh
+if [ "${WM_TEST_FAULT:-}" = promote ]; then
+    case "$3" in */view/wifi-monitor.js)
+        # A failure after replacing the destination also needs an undo.
+        /bin/mv "$@"
+        echo 'Simulated replacement failure' >&2
+        exit 1
+        ;;
+    esac
+fi
+exec /bin/mv "$@"

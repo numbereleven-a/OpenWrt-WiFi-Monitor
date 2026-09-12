@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+test "$1" = '-O'
+out=$2
+url=$3
+case "$url" in
+    https://raw.githubusercontent.com/numbereleven-a/OpenWrt-WiFi-Monitor/main/install.sh)
+        [ "${WM_TEST_FAULT:-}" != download-installer ] || exit 8
+        exec /bin/cp "$WM_TEST_SOURCE/install.sh" "$out"
+        ;;
+    https://raw.githubusercontent.com/numbereleven-a/OpenWrt-WiFi-Monitor/v1.1.0/files/*)
+        [ "${WM_TEST_FAULT:-}" != download-payload ] || exit 8
+        printf '%s\n' "$url" >> "$WM_TEST_LOG"
+        exec /bin/cp "$WM_TEST_SOURCE/files/${url##*/}" "$out"
+        ;;
+    *) echo "Unexpected download URL" >&2; exit 1;;
+esac

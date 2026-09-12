@@ -1,20 +1,21 @@
-# История изменений
+# Changelog
 
-## Unreleased
+## 1.1.0 — 2026-09-12
 
-- Добавлена лицензия MIT.
-- Основная документация переведена на английский язык, русский вариант вынесен в `README.ru.md`.
-- Интерфейс переведён на английский язык с автоматическим выбором английского или русского языка LuCI.
-- Добавлена проверка регистрации RPC после установки.
-- Исправлена проверка файлов LuCI в установщике для OpenWrt 24.10.
-- Скриншоты интерфейса переведены на английский язык.
-- Добавлена установка и обновление одной командой.
-- Удалены подписи под скриншотами.
+- Fixed one-line updates reusing stale files from the current directory.
+- Added staging and backups before replacing installed files.
+- Added restoration after replacement or RPC registration failures.
+- Fixed error propagation when downloading the installer.
+- Pinned downloaded component files to the matching release tag.
+- Fixed the LuCI dependency check on OpenWrt 24.10.
+- Added English and Russian UI support, English documentation and a separate Russian README.
+- Added the MIT License and English screenshots.
+- Added regression tests for update and download failures.
 
 ## 1.0.0
 
-- Добавлена страница «Сервисы → Wi-Fi монитор» для LuCI.
-- Добавлены текущие и недавние подключения, поиск, сортировка и фильтр диапазона.
-- Добавлены ручное и автоматическое обновление, счётчики и выделение слабого сигнала.
-- Добавлены установщик с резервным копированием и скрипт удаления.
-- Подготовлены инструкция, сравнение с DHCP-арендами и иллюстрации с вымышленными данными.
+- Added the Wi-Fi Monitor page under Services in LuCI.
+- Added current and recent connections, search, sorting and band filtering.
+- Added manual and automatic refresh, counters and weak-signal highlighting.
+- Added installation with backups and a removal script.
+- Added documentation comparing Wi-Fi associations with DHCP leases.
