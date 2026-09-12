@@ -2,15 +2,9 @@
 
 ## 1.1.0 — 2026-09-12
 
-- Fixed one-line updates reusing stale files from the current directory.
-- Added staging and backups before replacing installed files.
-- Added restoration after replacement or RPC registration failures.
-- Fixed error propagation when downloading the installer.
-- Pinned downloaded component files to the matching release tag.
-- Fixed the LuCI dependency check on OpenWrt 24.10.
-- Added English and Russian UI support, English documentation and a separate Russian README.
-- Added the MIT License and English screenshots.
-- Added regression tests for update and download failures.
+- Fixed one-line updates silently installing outdated files from the current directory.
+- Fixed failed updates leaving a mixture of old and new files by preparing replacements and restoring previous files on failure.
+- Fixed installer download failures incorrectly returning a successful exit status.
 
 ## 1.0.0
 
